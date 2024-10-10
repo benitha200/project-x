@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Box, Select, FormLabel, Grid, Heading, VStack, Text, Container, useColorModeValue, HStack, Card, CardHeader, CardBody } from '@chakra-ui/react';
+import { Box, Select, FormLabel, Grid, Heading, VStack, Text, Container, useColorModeValue, HStack, Card, CardHeader, CardBody, ChakraBaseProvider, ChakraProvider } from '@chakra-ui/react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 // Assuming you have a CSV import mechanism
@@ -98,32 +98,31 @@ const Dashboard = () => {
 
 
   return (
-    <>
-      <Box className='w-full bg-sky-700 text-center p-4'>
-        {/* <Span>PROJECT X</h1> */}
+    <ChakraProvider>
+      <Box className='w-full bg-sky-600 text-center p-4'>
         <span className='text-white text-3xl font-bold'>PROJECT X</span>
       </Box>
       <HStack>
         <VStack className='w-1/4'>
           <span className='text-2xl font-bold text-slate-800'>Filter By <span className='text-sky-600'>Crop</span> or <span className='text-sky-600'>District</span></span>
           <Box mb={6} className='p-6 w-full'>
-            <FormLabel className='m-2'>Select Crop</FormLabel>
-            <Select className='border border-slate-500 w-full p-5 rounded' value={selectedCrop} onChange={e => setSelectedCrop(e.target.value)}>
+            <FormLabel className='m-2 text-lg'>Select Crop</FormLabel>
+            <Select variant='filled' h={14} className='border border-slate-500 w-full rounded' value={selectedCrop} onChange={e => setSelectedCrop(e.target.value)}>
               {crops.map(crop => (
-                <option key={crop} value={crop}>{crop}</option>
+                <option key={crop} value={crop} className='text-lg'>{crop}</option>
               ))}
             </Select>
           </Box>
           <Box mb={6} className='p-6 w-full'>
-            <FormLabel className='m-2'>Select District</FormLabel>
-            <Select className='border w-full border-slate-500 p-5 rounded' value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
+            <FormLabel className='m-2 text-lg'>Select District</FormLabel>
+            <Select variant="filled" height={14} className='border w-full border-slate-500 rounded h-24' value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
               {data.map(item => (
-                <option key={item.District} value={item.District}>{item.District}</option>
+                <option key={item.District} value={item.District} className='text-lg'>{item.District}</option>
               ))}
             </Select>
           </Box>
         </VStack>
-        <Box mt={6} className='w-3/4'>
+        <Box mt={6} className='w-3/4 m-12'>
           <FormLabel className='text-xl font-bold'>Map of Top 5 Districts</FormLabel>
           <MapComponent districts={districtData} />
         </Box>
@@ -136,7 +135,6 @@ const Dashboard = () => {
           </CardHeader>
           <CardBody>
             <BarChart width={800} height={300} data={districtData} className='mt-12'>
-              {/* <CartesianGrid strokeDasharrayx="3 3" /> */}
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
@@ -161,7 +159,7 @@ const Dashboard = () => {
       </HStack>
 
 
-    </>
+    </ChakraProvider>
 
   );
 };
