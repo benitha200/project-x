@@ -326,7 +326,7 @@ const Dashboard = () => {
     <ChakraProvider>
       <Box bg={bgColor} minHeight="100vh" color={textColor}>
         <Box bg={accentColor} color="white" textAlign="center" py={6} mb={8} boxShadow="md">
-          <Heading as="h1" size="xl" fontWeight="bold" className='text-sky-600'>Agricultural Data Dashboard</Heading>
+          <Heading as="h1" size="xl" fontWeight="bold" className='text-sky-600'>Project X</Heading>
         </Box>
         
         <Container maxW="container.xl">
