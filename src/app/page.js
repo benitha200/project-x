@@ -368,7 +368,7 @@ const Dashboard = () => {
             <VStack spacing={6} align="stretch">
               <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
                 <CardHeader bg={accentColor} color="white">
-                  <Heading size="md" className='text-slate-800'>Top 5 Districts for <span className='text-sky-600'>{selectedCrop}</span>2024</Heading>
+                  <Heading size="md" className='text-slate-800'>Top 5 Districts for <span className='text-sky-600'>{selectedCrop}</span> 2024</Heading>
                 </CardHeader>
                 <CardBody>
                   <MapComponent districts={districtData} />
@@ -397,7 +397,7 @@ const Dashboard = () => {
             
             <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
               <CardHeader bg={accentColor} color="white">
-                <Heading size="md" className='text-slate-700'>Top 5 Crops in <span className='text-sky-600'>{selectedDistrict || 'Selected District'}</span>2024</Heading>
+                <Heading size="md" className='text-slate-700'>Top 5 Crops in <span className='text-sky-600'>{selectedDistrict || 'Selected District'}</span> 2024</Heading>
               </CardHeader>
               <CardBody>
                 <ResponsiveContainer width="100%" height={300}>
