@@ -368,7 +368,7 @@ const Dashboard = () => {
             <VStack spacing={6} align="stretch">
               <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
                 <CardHeader bg={accentColor} color="white">
-                  <Heading size="md" className='text-slate-800'>Top 5 Districts for <span className='text-sky-600'>{selectedCrop}</span></Heading>
+                  <Heading size="md" className='text-slate-800'>Top 5 Districts for <span className='text-sky-600'>{selectedCrop}</span>2024</Heading>
                 </CardHeader>
                 <CardBody>
                   <MapComponent districts={districtData} />
@@ -380,7 +380,7 @@ const Dashboard = () => {
           <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8} mt={8}>
             <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
               <CardHeader bg={accentColor} color="white">
-                <Heading size="md" className='text-slate-700'>Top 5 <span className='text-sky-600'>{selectedCrop}</span> Growing Districts</Heading>
+                <Heading size="md" className='text-slate-700'>Top 5 <span className='text-sky-600'>{selectedCrop}</span> Growing Districts 2024</Heading>
               </CardHeader>
               <CardBody>
                 <ResponsiveContainer width="100%" height={300}>
@@ -397,7 +397,7 @@ const Dashboard = () => {
             
             <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
               <CardHeader bg={accentColor} color="white">
-                <Heading size="md" className='text-slate-700'>Top 5 Crops in <span className='text-sky-600'>{selectedDistrict || 'Selected District'}</span></Heading>
+                <Heading size="md" className='text-slate-700'>Top 5 Crops in <span className='text-sky-600'>{selectedDistrict || 'Selected District'}</span>2024</Heading>
               </CardHeader>
               <CardBody>
                 <ResponsiveContainer width="100%" height={300}>
