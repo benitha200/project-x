@@ -169,10 +169,9 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Box, Select, FormLabel, Grid, Heading, VStack, Text, Container, useColorModeValue, HStack, Card, CardHeader, CardBody, ChakraProvider, Flex } from '@chakra-ui/react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Box, Button, Select, FormLabel, Grid, Heading, Text, Container, useColorModeValue, Card, CardHeader, CardBody, ChakraProvider, Flex } from '@chakra-ui/react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { motion } from 'framer-motion';
 
 // Assuming you have a CSV import mechanism
 import csvData from './../../data/cultivated_2017_A.csv';
@@ -220,63 +219,20 @@ const MapComponent = ({ districts }) => {
 
   const center = { lat: -1.9441, lng: 30.0619 }; // Center of Rwanda
 
-  const getMarkerColor = (value) => {
-    const maxValue = Math.max(...districts.map(d => d.value));
-    const normalizedValue = value / maxValue;
-    const hue = (1 - normalizedValue) * 240; // Blue (240) to Red (0)
-    return `hsl(${hue}, 70%, 50%)`;
-  };
-
-  const getMarkerIcon = (value) => {
-    const maxValue = Math.max(...districts.map(d => d.value));
-    const normalizedValue = value / maxValue;
-    const size = 8 + normalizedValue * 12; // Size between 8 and 20 based on value
-    const color = getMarkerColor(value);
-
-    return {
-      url: `data:image/svg+xml,${encodeURIComponent(`
-        <svg width="${size * 2}" height="${size * 2}" viewBox="0 0 ${size * 2} ${size * 2}" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="${size}" cy="${size}" r="${size}" fill="${color}" fill-opacity="0.8" stroke="#FFFFFF" stroke-width="2"/>
-        </svg>
-      `)}`,
-      scaledSize: { width: size * 2, height: size * 2 },
-    };
-  };
-
   return (
     <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={center}
         zoom={8}
-        options={{
-          styles: [
-            {
-              featureType: 'all',
-              elementType: 'all',
-              stylers: [{ saturation: -20 }]
-            },
-            {
-              featureType: 'water',
-              elementType: 'geometry',
-              stylers: [{ color: '#e9e9e9' }, { lightness: 17 }]
-            },
-            {
-              featureType: 'landscape',
-              elementType: 'geometry',
-              stylers: [{ color: '#f5f5f5' }, { lightness: 20 }]
-            },
-          ]
-        }}
       >
         {districts.map(district => {
-          const position = districtCoordinates[district.name];
+          const position = districtCoordinates[district];
           return position ? (
             <Marker
-              key={district.name}
+              key={district}
               position={position}
-              title={`${district.name}: ${district.value.toFixed(2)}`}
-              icon={getMarkerIcon(district.value)}
+              title={district}
             />
           ) : null;
         })}
@@ -287,13 +243,15 @@ const MapComponent = ({ districts }) => {
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
-  const [selectedCrop, setSelectedCrop] = useState('Cereals');
-  const [selectedDistrict, setSelectedDistrict] = useState('Huye');
+  const [selectedCrop, setSelectedCrop] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [chartData, setChartData] = useState([]);
+  const [mapDistricts, setMapDistricts] = useState([]);
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const cardBgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'gray.100');
-  const accentColor = 'sky.600';
-  
+  const accentColor = 'teal.500';
+
   const crops = [
     'Cereals', 'Maize', 'Sorghum', 'Paddy rice', 'Wheat', 'Other cereals',
     'Tubers and Roots', 'Cassava', 'Sweet potatoes', 'Irish potatoes', 'Yams & Taro',
@@ -304,114 +262,154 @@ const Dashboard = () => {
 
   useEffect(() => {
     setData(csvData);
+    setMapDistricts(Object.keys(districtCoordinates));
   }, []);
 
-  const districtData = data
-    .map(item => ({
-      name: item.District,
-      value: parseFloat(item[selectedCrop]) || 0
-    }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
+  useEffect(() => {
+    if (selectedCrop) {
+      const cropData = data
+        .filter(item => parseFloat(item[selectedCrop]) > 0)
+        .map(item => ({
+          name: item.District,
+          value: parseFloat(item[selectedCrop]) || 0
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);  // Only take the top 5 districts
+      setChartData(cropData);
+      setMapDistricts(cropData.map(item => item.name));
+    } else if (selectedDistrict) {
+      const districtData = Object.entries(data.find(item => item.District === selectedDistrict) || {})
+        .filter(([key, value]) => crops.includes(key) && value !== '-')
+        .map(([key, value]) => ({ name: key, value: parseFloat(value) || 0 }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);  // Only take the top 5 crops
+      setChartData(districtData);
+      setMapDistricts([selectedDistrict]);
+    } else {
+      setChartData([]);
+      setMapDistricts(Object.keys(districtCoordinates));
+    }
+  }, [selectedCrop, selectedDistrict, data]);
+  const handleCropChange = (e) => {
+    setSelectedCrop(e.target.value);
+    setSelectedDistrict('');
+  };
 
-  const cropData = selectedDistrict
-    ? Object.entries(data.find(item => item.District === selectedDistrict) || {})
-      .filter(([key, value]) => crops.includes(key) && value !== '-')
-      .map(([key, value]) => ({ name: key, value: parseFloat(value) || 0 }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5)
-    : [];
+  const handleDistrictChange = (e) => {
+    setSelectedDistrict(e.target.value);
+    setSelectedCrop('');
+  };
 
   return (
     <ChakraProvider>
       <Box bg={bgColor} minHeight="100vh" color={textColor}>
-        <Box bg={accentColor} color="white" textAlign="center" py={6} mb={8} boxShadow="md">
-          <Heading as="h1" size="xl" fontWeight="bold" className='text-sky-600'>Project X</Heading>
+        <Box bg={accentColor} color="white" py={6} mb={6} boxShadow="md">
+          <Container maxW="container.xl">
+            <Heading as="h1" size="xl" fontWeight="bold" mb={4} textAlign="center">
+              Agricultural Dashboard
+            </Heading>
+          </Container>
         </Box>
-        
+
         <Container maxW="container.xl">
-          <Grid templateColumns={{ base: "1fr", md: "1fr 3fr" }} gap={8}>
-            <VStack spacing={6} align="stretch">
-              <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
-                <CardBody>
-                  <Heading size="md" mb={4} color={accentColor}>Filter Options</Heading>
-                  <FormLabel>Select Crop</FormLabel>
-                  <Select
-                    value={selectedCrop}
-                    onChange={e => setSelectedCrop(e.target.value)}
-                    bg={bgColor}
-                    borderColor={accentColor}
-                    _hover={{ borderColor: 'sky.400' }}
-                  >
-                    {crops.map(crop => (
-                      <option key={crop} value={crop}>{crop}</option>
-                    ))}
-                  </Select>
-                  
-                  <FormLabel mt={4}>Select District</FormLabel>
-                  <Select
-                    value={selectedDistrict}
-                    onChange={e => setSelectedDistrict(e.target.value)}
-                    bg={bgColor}
-                    borderColor={accentColor}
-                    _hover={{ borderColor: 'sky.400' }}
-                  >
-                    <option value="">All Districts</option>
-                    {data.map(item => (
-                      <option key={item.District} value={item.District}>{item.District}</option>
-                    ))}
-                  </Select>
-                </CardBody>
-              </Card>
-            </VStack>
-            
-            <VStack spacing={6} align="stretch">
-              <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
-                <CardHeader bg={accentColor} color="white">
-                  <Heading size="md" className='text-slate-800'>Top 5 Districts for <span className='text-sky-600'>{selectedCrop}</span> 2024</Heading>
-                </CardHeader>
-                <CardBody>
-                  <MapComponent districts={districtData} />
-                </CardBody>
-              </Card>
-            </VStack>
-          </Grid>
-          
-          <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8} mt={8}>
-            <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={8} mb={8}>
+            <Card bg={cardBgColor} shadow="lg" borderRadius="lg">
               <CardHeader bg={accentColor} color="white">
-                <Heading size="md" className='text-slate-700'>Top 5 <span className='text-sky-600'>{selectedCrop}</span> Growing Districts 2024</Heading>
+                <Heading size="md">Select Crop</Heading>
               </CardHeader>
               <CardBody>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={districtData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#0891b2" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <FormLabel fontWeight="bold">Choose a crop to find suitable districts</FormLabel>
+                <Select
+                  value={selectedCrop}
+                  onChange={handleCropChange}
+                  bg={bgColor}
+                  borderColor={accentColor}
+                  _hover={{ borderColor: 'teal.300' }}
+                >
+                  <option value="">Select a crop</option>
+                  {crops.map(crop => (
+                    <option key={crop} value={crop}>{crop}</option>
+                  ))}
+                </Select>
               </CardBody>
             </Card>
-            
-            <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden">
+
+            <Card bg={cardBgColor} shadow="lg" borderRadius="lg">
               <CardHeader bg={accentColor} color="white">
-                <Heading size="md" className='text-slate-700'>Top 5 Crops in <span className='text-sky-600'>{selectedDistrict || 'Selected District'}</span> 2024</Heading>
+                <Heading size="md">Select District</Heading>
               </CardHeader>
               <CardBody>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={cropData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#14B8A6" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <FormLabel fontWeight="bold">Choose a district to find suitable crops</FormLabel>
+                <Select
+                  value={selectedDistrict}
+                  onChange={handleDistrictChange}
+                  bg={bgColor}
+                  borderColor={accentColor}
+                  _hover={{ borderColor: 'teal.300' }}
+                >
+                  <option value="">Select a district</option>
+                  {data.map(item => (
+                    <option key={item.District} value={item.District}>{item.District}</option>
+                  ))}
+                </Select>
               </CardBody>
             </Card>
           </Grid>
+
+          <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8}>
+            <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden" mb={8}>
+              <CardHeader bg={accentColor} color="white">
+                <Heading size="md">
+                  {selectedCrop
+                    ? `Top 5 Districts Growing ${selectedCrop}`
+                    : selectedDistrict
+                      ? `Top 5 Crops Grown in ${selectedDistrict}`
+                      : 'Agricultural Data'}
+                </Heading>
+              </CardHeader>
+              <CardBody>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={useColorModeValue('gray.200', 'gray.600')} />
+                    <XAxis dataKey="name" tick={{ fill: textColor }} />
+                    <YAxis tick={{ fill: textColor }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: cardBgColor,
+                        color: "#0EA5E9",
+                        border: 'none',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Line type="monotone" dataKey="value" stroke="#0EA5E9" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardBody>
+            </Card>
+            <Card bg={cardBgColor} shadow="lg" borderRadius="lg" overflow="hidden" mb={8}>
+              <CardHeader bg={accentColor} color="white">
+                <Heading size="md">
+                  {selectedCrop
+                    ? `Districts Growing ${selectedCrop}`
+                    : selectedDistrict
+                      ? `Location of ${selectedDistrict}`
+                      : 'All Districts'}
+                </Heading>
+              </CardHeader>
+              <CardBody>
+                <Box height="400px">
+                  <MapComponent districts={mapDistricts} />
+                </Box>
+              </CardBody>
+            </Card>
+          </Grid>
+
+          {!selectedCrop && !selectedDistrict && (
+            <Text textAlign="center" fontSize="xl" mt={8}>
+              Please select a crop or district to view specific data.
+            </Text>
+          )}
         </Container>
       </Box>
     </ChakraProvider>

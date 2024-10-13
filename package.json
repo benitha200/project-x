@@ -22,7 +22,9 @@
     "react": "^18",
     "react-dom": "^18",
     "react-leaflet": "^4.2.1",
-    "recharts": "^2.12.7"
+    "recharts": "^2.12.7",
+    "shapefile": "^0.6.6",
+    "shpjs": "^6.1.0"
   },
   "devDependencies": {
     "csv-loader": "^3.0.5",
