@@ -135,10 +135,10 @@ const Dashboard = () => {
   return (
     <ChakraProvider>
       <Box bg={bgColor} minHeight="100vh" color={textColor}>
-        <Box bg={accentColor} color="white" py={6} mb={6} boxShadow="md">
+        <Box bg={accentColor} color="white" py={2} mb={6} boxShadow="md">
           <Container maxW="container.xl">
-            <Heading as="h1" size="xl" fontWeight="bold" mb={4} textAlign="center">
-              Agricultural Dashboard
+            <Heading as="h2" size="xl" fontWeight="bold" mb={3} textAlign="center">
+              Project X
             </Heading>
           </Container>
         </Box>
