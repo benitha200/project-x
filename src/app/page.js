@@ -208,13 +208,13 @@ const Dashboard = () => {
                     <Tooltip
                       contentStyle={{
                         backgroundColor: cardBgColor,
-                        color: "#0EA5E9",
+                        color: "#008080",
                         border: 'none',
                         borderRadius: '8px',
                         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
                       }}
                     />
-                    <Bar type="monotone" dataKey="value" fill="#0EA5E9" />
+                    <Bar type="monotone" dataKey="value" fill="#008080" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardBody>
