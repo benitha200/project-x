@@ -138,7 +138,7 @@ const Dashboard = () => {
         <Box bg={accentColor} color="white" py={2} mb={6} boxShadow="md">
           <Container maxW="container.xl">
             <Heading as="h2" size="xl" fontWeight="bold" mb={3} textAlign="center">
-              Project X
+              CropVision Tech
             </Heading>
           </Container>
         </Box>
